@@ -9,7 +9,7 @@ nsup_individ = 100
 nindivid_per_sup = 10000
 timestep = dt.timedelta(seconds=21600)
 start_date = dt.datetime(2010,1,1)
-end_date = dt.datetime(2010,2,1)
+end_date = dt.datetime(2011,1,1)
 duration = 3
 seeding_rate = 10
 
@@ -36,7 +36,9 @@ global_settings = {'developmentalcoefficient':np.array([595.00, 388.00, 581.00])
 
 outputgrid = {'lon':[2.5, 3, 3.5, 4], 'lat':[60, 60.5, 61, 61.5]}
 
-bb = PascalAdvection(nsup_individ, nindivid_per_sup, global_settings, reader, timestep, start_date, duration, seeding_rate, outputgrid = outputgrid)
+debug = ['lifestatus', 'nvindividuals', 'developmentalstage', 'thermalhistory', 'structuralmass', 'maxstructuralmass', 'reservemass', 'age', 'sex', 'timeofdiapauseentry', 'timeofdiapauseexit', 'structuralmassatdiapauseentry', 'reservemassatdiapauseentry', 'inseminationstate', 'reproductiveallocation', 'malegenome', 'totalfecundity', 'potentialfecundity', 'zpos', 'zidx'] 
+
+bb = PascalAdvection(nsup_individ, nindivid_per_sup, global_settings, reader, timestep, start_date, duration, seeding_rate, outputgrid = outputgrid, debug=debug)
 bb.run()
 
 

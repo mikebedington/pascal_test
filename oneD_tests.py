@@ -22,26 +22,29 @@ pred1lightdep_data_nc = nc.Dataset(inputdatapath / "pred1lightdep4di.nc")
 pred1dens_data_nc = nc.Dataset(inputdatapath / "pred1dens4di.nc")
 cmm_data_nc = nc.Dataset(inputdatapath / "cmm3di.nc", mode = "r")
 
-i = slice(9,11)
-j = 10
+i = 0
+j = 0
 t = slice(0,1460)
 
 # Turn into struct like object
-env_dict = dotdict({'temperature':temperature_data_nc.variables["temperature"][t, :, i, j].T,
-'food1concentration':food1concentration_data_nc.variables["chl"][t, :, i, j].T,
-'nsv':nsv_data_nc.variables["vo"][t, :, i, j].T,
-'esv':esv_data_nc.variables["uo"][t, :, i, j].T,
-'mld':smld_data_nc.variables["smld"][t, i, j].T,
-'irradiance':irradiance_data_nc.variables["par"][t, :, i, j].T,
-'pred1dens':pred1dens_data_nc.variables["p1risk"][t, :, i, j].T,
-'pred1lightdep':pred1lightdep_data_nc.variables["parrs"][t, :, i, j].T
+env_dict = dotdict({'temperature':temperature_data_nc.variables["temperature"][t, :, i, j],
+'food1concentration':food1concentration_data_nc.variables["chl"][t, :, i, j],
+'nsv':nsv_data_nc.variables["vo"][t, :, i, j],
+'esv':esv_data_nc.variables["uo"][t, :, i, j],
+'mld':smld_data_nc.variables["smld"][t, i, j],
+'irradiance':irradiance_data_nc.variables["par"][t, :, i, j],
+'pred1dens':pred1dens_data_nc.variables["p1risk"][t, :, i, j],
+'pred1lightdep':pred1lightdep_data_nc.variables["parrs"][t, :, i, j]
 })
 
+"""
 for k, v in env_dict.items():
-	try:
-		env_dict[k] = np.transpose(v,[2,0,1])
-	except ValueError:
-		env_dict[k] = np.transpose(v,[1,0])
+    try:
+        env_dict[k] = np.transpose(v,[2,1,0])
+    except ValueError:
+        pass
+        #env_dict[k] = np.transpose(v,[1,0])
+"""
 
 tracker = dotdict({'environment':env_dict})
 environment_ind = 0
@@ -76,10 +79,13 @@ seeding_rate = 10
 
 # expand the environment to cover the timeperiod
 for k, v in env_dict.items():
-	if k =='mld':
-		env_dict[k] = np.tile(v,[duration,1])
-	else:
-		env_dict[k] = np.tile(v,[duration,1,1])
+    if k =='mld':
+        env_dict[k] = np.tile(v.T,[duration])[:,np.newaxis]
+    else:
+        env_dict[k] = np.transpose(np.tile(v,[duration,1])[:,np.newaxis], [0,2,1])
+
+env_dict['z'] = -np.array([1, 2, 3, 4, 6, 7, 8, 10, 12, 14, 16, 19, 22, 26, 30, 35, 41, 48, 56, 66, 78, 93, 110, 131, 156, 187, 223, 267, 319, 381, 454, 542, 644, 764, 903, 1063, 1246])
+
 reader = env_dict
 
 bb = Pascal1D(nsup_individ, nindivid_per_sup, global_settings, reader, timestep, start_date, duration, seeding_rate)
